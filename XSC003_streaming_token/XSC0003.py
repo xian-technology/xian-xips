@@ -4,67 +4,67 @@ metadata = Hash()
 streams = Hash()
 
 TransferEvent = LogEvent(
-    event="Transfer",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Transfer",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 ApproveEvent = LogEvent(
-    event="Approve",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Approve",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 StreamCreatedEvent = LogEvent(
-    event="StreamCreated",
-    params={
-        "sender": {"type": str, "idx": True},
-        "receiver": {"type": str, "idx": True},
-        "stream_id": {"type": str, "idx": True},
-        "rate": {"type": (int, float, decimal)},
-        "begins": {"type": str},
-        "closes": {"type": str},
+    "StreamCreated",
+    {
+        "sender": indexed(str),
+        "receiver": indexed(str),
+        "stream_id": indexed(str),
+        "rate": (int, float, decimal),
+        "begins": str,
+        "closes": str,
     },
 )
 StreamBalanceEvent = LogEvent(
-    event="StreamBalance",
-    params={
-        "receiver": {"type": str, "idx": True},
-        "sender": {"type": str, "idx": True},
-        "stream_id": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
-        "balancer": {"type": str},
+    "StreamBalance",
+    {
+        "receiver": indexed(str),
+        "sender": indexed(str),
+        "stream_id": indexed(str),
+        "amount": (int, float, decimal),
+        "balancer": str,
     },
 )
 StreamCloseChangeEvent = LogEvent(
-    event="StreamCloseChange",
-    params={
-        "receiver": {"type": str, "idx": True},
-        "sender": {"type": str, "idx": True},
-        "stream_id": {"type": str, "idx": True},
-        "time": {"type": str},
+    "StreamCloseChange",
+    {
+        "receiver": indexed(str),
+        "sender": indexed(str),
+        "stream_id": indexed(str),
+        "time": str,
     },
 )
 StreamForfeitEvent = LogEvent(
-    event="StreamForfeit",
-    params={
-        "receiver": {"type": str, "idx": True},
-        "sender": {"type": str, "idx": True},
-        "stream_id": {"type": str, "idx": True},
-        "time": {"type": str},
+    "StreamForfeit",
+    {
+        "receiver": indexed(str),
+        "sender": indexed(str),
+        "stream_id": indexed(str),
+        "time": str,
     },
 )
 StreamFinalizedEvent = LogEvent(
-    event="StreamFinalized",
-    params={
-        "receiver": {"type": str, "idx": True},
-        "sender": {"type": str, "idx": True},
-        "stream_id": {"type": str, "idx": True},
-        "time": {"type": str},
+    "StreamFinalized",
+    {
+        "receiver": indexed(str),
+        "sender": indexed(str),
+        "stream_id": indexed(str),
+        "time": str,
     },
 )
 

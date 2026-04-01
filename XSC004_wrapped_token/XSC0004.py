@@ -6,33 +6,33 @@ minter = Variable()
 
 
 TransferEvent = LogEvent(
-    event="Transfer",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Transfer",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 ApproveEvent = LogEvent(
-    event="Approve",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Approve",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 MintEvent = LogEvent(
-    event="Mint",
-    params={
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Mint",
+    {
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 BurnEvent = LogEvent(
-    event="Burn",
-    params={
-        "from": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Burn",
+    {
+        "from": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 
