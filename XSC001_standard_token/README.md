@@ -1,60 +1,82 @@
-# XSC001 Token Contract
+# XSC001 Standard Token
 
-The `XSC001` token contract is a standardized smart contract developed for the Xian blockchain. This contract implements a basic token system with functionalities such as token transfer, approval mechanisms, and metadata management. It is designed to serve as a foundational component for building decentralized applications on the Xian network.
+`XSC001` defines the core fungible-token surface for Xian.
 
-## Contract Overview
+This standard is intentionally narrow. It covers balances, approvals, metadata,
+and delegated transfers. It does not include permit signing or streaming
+payments. Those belong to separate standards.
 
-The `XSC001` contract includes mechanisms for:
+## Required Surface
 
-- Initial token distribution
-- Metadata management
-- Token transfers
-- Approval and transfer from approved accounts
+```python
+@export
+def change_metadata(key: str, value: Any):
+    ...
 
-## Functions
+@export
+def transfer(amount: float, to: str):
+    ...
 
-### `def seed()`
+@export
+def approve(amount: float, to: str):
+    ...
 
-This function is called upon contract creation and initializes the contract's state. It sets the initial token balance for the creator and establishes basic token metadata such as the token name, symbol, logo URL, website, and operator.
+@export
+def transfer_from(amount: float, to: str, main_account: str):
+    ...
 
-**Parameters:**
-- None
+@export
+def balance_of(address: str):
+    ...
+```
 
-### `def change_metadata(key: str, value: Any)`
+## State Layout
 
-Allows the operator to update the metadata of the token.
+The standard token keeps balances and approvals separate:
 
-**Parameters:**
-- `key`: The metadata key to update (e.g., 'token_name', 'token_symbol').
-- `value`: The new value for the specified key.
+```python
+balances = Hash(default_value=0)
+approvals = Hash(default_value=0)
+metadata = Hash()
+```
 
-### `def transfer(amount: float, to: str)`
+- `balances[address]` stores spendable token balances
+- `approvals[owner, spender]` stores delegated spending allowances
 
-Enables token holders to transfer tokens to another account.
+## Expected Semantics
 
-**Parameters:**
-- `amount`: The amount of tokens to be transferred.
-- `to`: The recipient's address.
+- `transfer` moves tokens from `ctx.caller` to `to`
+- `approve` overwrites the allowance for `to`
+- `approve` may set the allowance to `0`
+- `transfer_from` spends from `main_account` using
+  `approvals[main_account, ctx.caller]`
+- `balance_of` returns the balance for an address
 
-### `def approve(amount: float, to: str)`
+## Recommended Metadata Keys
 
-Allows a token holder to approve another account to spend a specified amount of tokens on their behalf.
+Common metadata fields for XSC001 implementations are:
 
-**Parameters:**
-- `amount`: The amount of tokens to be approved.
-- `to`: The address of the account that is being approved to spend tokens.
+- `token_name`
+- `token_symbol`
+- `token_logo_url`
+- `token_website`
+- `operator`
+- `total_supply`
 
-### `def transfer_from(amount: float, to: str, main_account: str)`
+## Events
 
-Enables an approved account to transfer tokens on behalf of the token holder.
+Implementations should emit:
 
-**Parameters:**
-- `amount`: The amount of tokens to transfer.
-- `to`: The recipient's address.
-- `main_account`: The address of the token holder who has approved the sender to spend tokens on their behalf.
+- `Transfer`
+- `Approve`
 
-## Contact
+Sender and recipient or spender should be indexed so explorers and subscribers
+can query them efficiently.
 
-For further assistance or to report issues, please open an issue in the main repository or contact the project maintainers directly.
+## Compatibility Notes
 
-Thank you for your interest in the `XSC001` token contract for the Xian blockchain.
+- Use non-negative approvals and overwrite semantics
+- Keep argument names stable for SDK and tooling interoperability
+- If a token also wants to support XSC002, it can add an
+  `approve_from_authorizer(owner, spender, amount)` extension without changing
+  the XSC001 core surface

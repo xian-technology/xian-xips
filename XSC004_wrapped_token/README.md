@@ -13,6 +13,9 @@ The contract includes:
 - Standard token operations (`transfer`, `approve`, `transfer_from`) for fungible tokens.
 - Metadata management for storing and updating token details.
 
+As with the current XSC001 model, delegated spending allowances are expected to
+live in a dedicated `approvals` hash rather than being mixed into balances.
+
 ## Contract Functions
 
 ### 1. `seed()`

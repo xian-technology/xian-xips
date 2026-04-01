@@ -80,7 +80,7 @@ def transfer_from(amount: float, to: str, main_account: str):
     assert amount > 0, "Cannot send negative balances."
     assert (
         approvals[main_account, ctx.caller] >= amount
-    ), f"Not enough coins approved to send. You have {balances[main_account, ctx.caller]} and are trying to spend {amount}"
+    ), f"Not enough coins approved to send. You have {approvals[main_account, ctx.caller]} and are trying to spend {amount}"
     assert balances[main_account] >= amount, "Not enough coins to send."
 
     approvals[main_account, ctx.caller] -= amount

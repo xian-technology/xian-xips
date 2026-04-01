@@ -1,23 +1,55 @@
-# Standardized Smart Contracts for Xian Blockchain
+# Xian Standards and Improvement Proposals
 
-Welcome to the official repository for standardized smart contracts on the Xian blockchain. This repository hosts a collection of foundational smart contracts developed in [contracting](https://github.com/xian-network/xian-contracting) (a subset of Python), the native smart contract programming language for Xian. These contracts are designed to provide a robust framework for building decentralized applications (dApps) and services on the Xian network.
+`xian-xips` is the umbrella repository for standards and proposal documents in
+the Xian ecosystem.
 
-## Introduction
+Today the repo mainly contains contract standards, but it is intentionally not
+limited to contracts. As the protocol and tooling surface grows, the same repo
+can also host standards for areas such as:
 
-The Xian blockchain is dedicated to offering a scalable, efficient, and user-friendly environment for decentralized applications and their users. The standardized smart contracts in this repository are a critical component of that mission, providing developers with reliable and tested building blocks for their applications.
+- protocol behavior
+- governance processes
+- RPC and API conventions
+- wallet signing formats
+- indexer and event schemas
+- tooling and interoperability requirements
 
-## Contract Standards
+## Standards Families
 
-Each contract in this repository follows a specific naming convention and standardization process to ensure consistency and quality.
+The current family in this repository is:
 
-### Naming Convention
+- `XSC###`: Xian Standard Contract
 
-- **XSC###**: The prefix "XSC" stands for Xian Standard Contract, followed by a numerical identifier indicating the sequence of the standard.
+Additional families can be introduced as needed without changing the role of
+the repository itself.
 
-### Testing
+## Current Standards
 
-- See the [contract-dev-environment](https://github.com/xian-network/contract-dev-environment) repository for information on how to test the contracts.
+- `XSC001`: standard fungible token core
+- `XSC002`: permit authorizer for signature-based approvals
+- `XSC003`: streaming token
+- `XSC004`: wrapped token
 
-## Contact
+## Repository Conventions
 
-For further assistance or to report issues or propose feature requests, please open an issue in the repository or contact the project maintainers directly.
+- Each standard lives in its own directory.
+- The directory contains a human-readable `README.md`.
+- Reference implementations live alongside the README.
+- Tests should describe the intended interoperability behavior of the
+  standard, not just one implementation detail.
+
+## Scope Guidance
+
+Use this repo when a proposal needs a stable, shared convention across the
+Xian universe. That can include contract interfaces, contract behavior, signed
+message formats, event schemas, governance procedures, or other interoperability
+surfaces.
+
+If a proposal is specific to one app or one private deployment, it generally
+does not belong here.
+
+## Testing
+
+Most contract standards in this repository include Contracting-based reference
+tests. Use the local Xian contract development environment that matches the
+rest of the stack when running them.

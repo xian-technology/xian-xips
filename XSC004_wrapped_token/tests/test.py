@@ -1,11 +1,7 @@
 import unittest
-from contracting.stdlib.bridge.time import Datetime
-from contracting.client import ContractingClient
-from contracting.storage.driver import Driver
-from contracting.stdlib.bridge.hashing import sha3
-from xian_py.wallet import Wallet
 from pathlib import Path
-import datetime
+
+from contracting.client import ContractingClient
 
 class TestCurrencyContract(unittest.TestCase):
     def setUp(self):
@@ -22,7 +18,7 @@ class TestCurrencyContract(unittest.TestCase):
         # Get the directory containing the test file
         current_dir = Path(__file__).parent
         # Navigate to the contract file in the parent directory
-        contract_path = current_dir.parent / "XSC0003.py"
+        contract_path = current_dir.parent / "XSC0004.py"
 
         with open(contract_path) as f:
             code = f.read()
@@ -123,7 +119,7 @@ class TestCurrencyContract(unittest.TestCase):
 
     def test_mint_happy_path(self):
         # GIVEN the default minter is 'sys'
-        current_balance = self.currency.balances["alice"]
+        current_balance = self.currency.balances["alice"] or 0
         current_supply = self.currency.metadata["total_supply"]
         # WHEN the minter mints 500 tokens to 'alice'
         self.currency.mint(amount=500, to="alice", signer="sys")

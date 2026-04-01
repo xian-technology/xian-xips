@@ -1,6 +1,6 @@
 balances = Hash(default_value=0)
+approvals = Hash(default_value=0)
 metadata = Hash()
-permits = Hash()
 streams = Hash()
 
 TransferEvent = LogEvent(
@@ -58,7 +58,6 @@ StreamForfeitEvent = LogEvent(
         "time": {"type": str},
     },
 )
-
 StreamFinalizedEvent = LogEvent(
     event="StreamFinalized",
     params={
@@ -69,7 +68,17 @@ StreamFinalizedEvent = LogEvent(
     },
 )
 
-# XSC001
+SENDER_KEY = "sender"
+RECEIVER_KEY = "receiver"
+STATUS_KEY = "status"
+BEGIN_KEY = "begins"
+CLOSE_KEY = "closes"
+RATE_KEY = "rate"
+CLAIMED_KEY = "claimed"
+STREAM_ACTIVE = "active"
+STREAM_FINALIZED = "finalized"
+STREAM_FORFEIT = "forfeit"
+
 
 @construct
 def seed():
@@ -103,7 +112,7 @@ def transfer(amount: float, to: str):
 @export
 def approve(amount: float, to: str):
     assert amount >= 0, "Cannot approve negative balances."
-    balances[ctx.caller, to] = amount
+    approvals[ctx.caller, to] = amount
 
     ApproveEvent({"from": ctx.caller, "to": to, "amount": amount})
 
@@ -112,11 +121,11 @@ def approve(amount: float, to: str):
 def transfer_from(amount: float, to: str, main_account: str):
     assert amount > 0, "Cannot send negative balances."
     assert (
-        balances[main_account, ctx.caller] >= amount
-    ), f"Not enough coins approved to send. You have {balances[main_account, ctx.caller]} and are trying to spend {amount}"
+        approvals[main_account, ctx.caller] >= amount
+    ), f"Not enough coins approved to send. You have {approvals[main_account, ctx.caller]} and are trying to spend {amount}"
     assert balances[main_account] >= amount, "Not enough coins to send."
 
-    balances[main_account, ctx.caller] -= amount
+    approvals[main_account, ctx.caller] -= amount
     balances[main_account] -= amount
     balances[to] += amount
 
@@ -128,50 +137,6 @@ def balance_of(address: str):
     return balances[address]
 
 
-# XSC002 / Permit
-
-
-@export
-def permit(owner: str, spender: str, value: float, deadline: str, signature: str) -> str:
-    deadline = strptime_ymdhms(deadline)
-    permit_msg = construct_permit_msg(owner, spender, value, str(deadline))
-    permit_hash = hashlib.sha3(permit_msg)
-
-    assert permits[permit_hash] is None, "Permit can only be used once."
-    assert now < deadline, "Permit has expired."
-    assert value >= 0, "Cannot approve negative balances!"
-    assert crypto.verify(owner, permit_msg, signature), "Invalid signature."
-
-    balances[owner, spender] = value
-    permits[permit_hash] = True
-
-    ApproveEvent({"from":owner, "to":spender, "amount":value})
-
-    return permit_hash
-
-
-def construct_permit_msg(owner: str, spender: str, value: float, deadline: str):
-    return f"{owner}:{spender}:{value}:{deadline}:{ctx.this}:{chain_id}"
-
-
-# XSC003 / Streaming Payments
-
-
-SENDER_KEY = "sender"
-RECEIVER_KEY = "receiver"
-STATUS_KEY = "status"
-BEGIN_KEY = "begins"
-CLOSE_KEY = "closes"
-RATE_KEY = "rate"
-CLAIMED_KEY = "claimed"
-STREAM_ACTIVE = "active"
-STREAM_FINALIZED = "finalized"
-STREAM_FORFEIT = "forfeit"
-
-
-# Creates a new stream to a receiver from ctx.caller
-# Stream can begin at any point in past / present / future
-# Wrapper for perform_create_stream
 @export
 def create_stream(receiver: str, rate: float, begins: str, closes: str):
     begins = strptime_ymdhms(begins)
@@ -182,9 +147,12 @@ def create_stream(receiver: str, rate: float, begins: str, closes: str):
     return stream_id
 
 
-# Internal function used to create a stream from a permit or from a direct call from the sender
 def perform_create_stream(
-    sender: str, receiver: str, rate: float, begins: datetime.datetime, closes: datetime.datetime
+    sender: str,
+    receiver: str,
+    rate: float,
+    begins: datetime.datetime,
+    closes: datetime.datetime,
 ):
     stream_id = hashlib.sha3(f"{sender}:{receiver}:{begins}:{closes}:{rate}")
 
@@ -200,43 +168,20 @@ def perform_create_stream(
     streams[stream_id, RATE_KEY] = rate
     streams[stream_id, CLAIMED_KEY] = 0
 
-    StreamCreatedEvent({"sender":sender, "receiver":receiver, "stream_id":stream_id, "rate":rate, "begins":str(begins), "closes":str(closes)})
+    StreamCreatedEvent(
+        {
+            "sender": sender,
+            "receiver": receiver,
+            "stream_id": stream_id,
+            "rate": rate,
+            "begins": str(begins),
+            "closes": str(closes),
+        }
+    )
 
     return stream_id
 
 
-# Creates a payment stream from a valid signature of a permit message
-# Wrapper for perform_create_stream
-@export
-def create_stream_from_permit(
-    sender: str,
-    receiver: str,
-    rate: float,
-    begins: str,
-    closes: str,
-    deadline: str,
-    signature: str,
-):
-    begins = strptime_ymdhms(begins)
-    closes = strptime_ymdhms(closes)
-    deadline = strptime_ymdhms(deadline)
-
-    assert now < deadline, "Permit has expired."
-    permit_msg = construct_stream_permit_msg(
-        sender, receiver, rate, begins, closes, deadline
-    )
-    permit_hash = hashlib.sha3(permit_msg)
-
-    assert permits[permit_hash] is None, "Permit can only be used once."
-    assert crypto.verify(sender, permit_msg, signature), "Invalid signature."
-
-    permits[permit_hash] = True
-
-    return perform_create_stream(sender, receiver, rate, begins, closes)
-
-
-# Moves balance due from stream from sender to receiver.
-# Called by `sender` or `receiver`
 @export
 def balance_stream(stream_id: str):
     assert streams[stream_id, STATUS_KEY], "Stream does not exist."
@@ -248,38 +193,33 @@ def balance_stream(stream_id: str):
     sender = streams[stream_id, SENDER_KEY]
     receiver = streams[stream_id, RECEIVER_KEY]
 
-    assert ctx.caller in [
-        sender,
-        receiver,
-    ], "Only sender or receiver can balance a stream."
+    assert ctx.caller in [sender, receiver], "Only sender or receiver can balance a stream."
 
     closes = streams[stream_id, CLOSE_KEY]
     begins = streams[stream_id, BEGIN_KEY]
     rate = streams[stream_id, RATE_KEY]
     claimed = streams[stream_id, CLAIMED_KEY]
 
-    # Calculate the amount of tokens that can be claimed
-
     outstanding_balance = calc_outstanding_balance(begins, closes, rate, claimed)
-
     assert outstanding_balance > 0, "No amount due on this stream."
 
     claimable_amount = calc_claimable_amount(outstanding_balance, sender)
 
     balances[sender] -= claimable_amount
     balances[receiver] += claimable_amount
-
     streams[stream_id, CLAIMED_KEY] += claimable_amount
 
-    StreamBalanceEvent({"receiver":receiver, "sender":sender, "stream_id":stream_id, "amount":claimable_amount, "balancer":ctx.caller})
+    StreamBalanceEvent(
+        {
+            "receiver": receiver,
+            "sender": sender,
+            "stream_id": stream_id,
+            "amount": claimable_amount,
+            "balancer": ctx.caller,
+        }
+    )
 
 
-
-
-# Sets a stream to expire at some point greater than or equal to the current time.
-# If the new closes time is in the past, the stream is closed immediately
-# If the new close time < begins, the stream is closed at begin time <invalidated>
-# Called by `sender`
 @export
 def change_close_time(stream_id: str, new_close_time: str):
     new_close_time = strptime_ymdhms(new_close_time)
@@ -293,7 +233,6 @@ def change_close_time(stream_id: str, new_close_time: str):
 
     assert ctx.caller == sender, "Only sender can change the close time of a stream."
 
-    # If new close time is in the past or before begin time, close immediately or at begin time
     if new_close_time <= now:
         streams[stream_id, CLOSE_KEY] = now
     elif new_close_time < begins:
@@ -311,24 +250,15 @@ def change_close_time(stream_id: str, new_close_time: str):
     )
 
 
-
-# Set the stream inactive.
-# A stream must be balanced before it can be finalized.
-# Closes must be <= now
-# Once a stream is finalized, it cannot be re-opened.
-# Called by : `sender` or `receiver`
 @export
 def finalize_stream(stream_id: str):
     assert streams[stream_id, STATUS_KEY], "Stream does not exist."
     assert streams[stream_id, STATUS_KEY] == STREAM_ACTIVE, "Stream is not active."
 
-    sender = streams[stream_id, "sender"]
-    receiver = streams[stream_id, "receiver"]
+    sender = streams[stream_id, SENDER_KEY]
+    receiver = streams[stream_id, RECEIVER_KEY]
 
-    assert ctx.caller in [
-        sender,
-        receiver,
-    ], "Only sender or receiver can finalize a stream."
+    assert ctx.caller in [sender, receiver], "Only sender or receiver can finalize a stream."
 
     begins = streams[stream_id, BEGIN_KEY]
     closes = streams[stream_id, CLOSE_KEY]
@@ -338,7 +268,6 @@ def finalize_stream(stream_id: str):
     assert closes <= now, "Stream has not closed yet."
 
     outstanding_balance = calc_outstanding_balance(begins, closes, rate, claimed)
-
     assert outstanding_balance == 0, "Stream has outstanding balance."
 
     streams[stream_id, STATUS_KEY] = STREAM_FINALIZED
@@ -353,25 +282,18 @@ def finalize_stream(stream_id: str):
     )
 
 
-
-# Convenience method to close a stream, balance it and finalize it
-# Called by `sender`
 @export
 def close_balance_finalize(stream_id: str):
     change_close_time(stream_id=stream_id, new_close_time=str(now))
     balance_finalize(stream_id=stream_id)
 
 
-# Convenience method to balance a stream and finalize it
-# Called by `receiver` or `sender`
 @export
 def balance_finalize(stream_id: str):
     balance_stream(stream_id=stream_id)
     finalize_stream(stream_id=stream_id)
 
 
-# Forfeit a stream to the sender
-# Called by `receiver`
 @export
 def forfeit_stream(stream_id: str) -> str:
     assert streams[stream_id, STATUS_KEY], "Stream does not exist."
@@ -379,6 +301,7 @@ def forfeit_stream(stream_id: str) -> str:
 
     receiver = streams[stream_id, RECEIVER_KEY]
     sender = streams[stream_id, SENDER_KEY]
+
     assert ctx.caller == receiver, "Only receiver can forfeit a stream."
 
     streams[stream_id, STATUS_KEY] = STREAM_FORFEIT
@@ -394,11 +317,12 @@ def forfeit_stream(stream_id: str) -> str:
     )
 
 
-
 def calc_outstanding_balance(
-    begins: datetime.datetime, closes: datetime.datetime, rate: float, claimed: float
+    begins: datetime.datetime,
+    closes: datetime.datetime,
+    rate: float,
+    claimed: float,
 ) -> float:
-
     claimable_end_point = now if now < closes else closes
     claimable_period = claimable_end_point - begins
     claimable_seconds = claimable_period.seconds
@@ -408,12 +332,6 @@ def calc_outstanding_balance(
 
 def calc_claimable_amount(amount_due: float, sender: str) -> float:
     return amount_due if amount_due < balances[sender] else balances[sender]
-
-
-def construct_stream_permit_msg(
-    sender: str, receiver: str, rate: float, begins: str, closes: str, deadline: str
-) -> str:
-    return f"{sender}:{receiver}:{rate}:{begins}:{closes}:{deadline}:{ctx.this}:{chain_id}"
 
 
 def strptime_ymdhms(date_string: str) -> datetime.datetime:
