@@ -8,11 +8,6 @@ TOKEN_PERMIT_INTERFACE = [
 ]
 
 
-@construct
-def seed():
-    pass
-
-
 def parse_time(value: str):
     return datetime.datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
 
