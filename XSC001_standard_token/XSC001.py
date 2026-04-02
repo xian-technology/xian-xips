@@ -1,6 +1,7 @@
 balances = Hash(default_value=0)
 approvals = Hash(default_value=0)
 metadata = Hash()
+
 operator = Variable()
 
 TransferEvent = LogEvent(
@@ -30,6 +31,7 @@ def seed():
     metadata["token_logo_url"] = "https://some.token.url/test-token.png"
     metadata["token_website"] = "https://some.token.url"
     metadata["total_supply"] = balances[ctx.caller]
+    
     operator.set(ctx.caller)
 
 
