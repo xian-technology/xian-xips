@@ -3,19 +3,19 @@ approvals = Hash(default_value=0)
 metadata = Hash()
 
 TransferEvent = LogEvent(
-    event="Transfer",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Transfer",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 ApproveEvent = LogEvent(
-    event="Approve",
-    params={
-        "from": {"type": str, "idx": True},
-        "to": {"type": str, "idx": True},
-        "amount": {"type": (int, float, decimal)},
+    "Approve",
+    {
+        "from": indexed(str),
+        "to": indexed(str),
+        "amount": (int, float, decimal),
     },
 )
 
