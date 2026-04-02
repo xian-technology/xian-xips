@@ -1,6 +1,7 @@
 balances = Hash(default_value=0)
 approvals = Hash(default_value=0)
 metadata = Hash()
+operator = Variable()
 
 TransferEvent = LogEvent(
     event="Transfer",
@@ -29,12 +30,12 @@ def seed():
     metadata["token_logo_url"] = "https://some.token.url/test-token.png"
     metadata["token_website"] = "https://some.token.url"
     metadata["total_supply"] = balances[ctx.caller]
-    metadata["operator"] = ctx.caller
+    operator.set(ctx.caller)
 
 
 @export
 def change_metadata(key: str, value: Any):
-    assert ctx.caller == metadata["operator"], "Only operator can set metadata!"
+    assert ctx.caller == operator.get(), "Only operator can set metadata!"
     metadata[key] = value
 
 
