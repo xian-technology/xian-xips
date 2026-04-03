@@ -38,10 +38,13 @@ The standard token keeps balances and approvals separate:
 balances = Hash(default_value=0)
 approvals = Hash(default_value=0)
 metadata = Hash()
+operator = Variable()
 ```
 
 - `balances[address]` stores spendable token balances
 - `approvals[owner, spender]` stores delegated spending allowances
+- `operator.get()` controls who may update token metadata in the canonical
+  implementation
 
 ## Expected Semantics
 
@@ -60,7 +63,6 @@ Common metadata fields for XSC001 implementations are:
 - `token_symbol`
 - `token_logo_url`
 - `token_website`
-- `operator`
 - `total_supply`
 
 ## Events
