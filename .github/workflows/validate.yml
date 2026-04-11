@@ -1,0 +1,46 @@
+name: Validate
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Validate standards layout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          root = Path(".")
+          standard_dirs = sorted(path for path in root.iterdir() if path.is_dir() and path.name.startswith("XSC"))
+          if not standard_dirs:
+              raise SystemExit("expected at least one XSC directory")
+
+          for path in standard_dirs:
+              readme = path / "README.md"
+              impls = sorted(path.glob("*.py"))
+              if not readme.exists():
+                  raise SystemExit(f"missing {readme}")
+              if not impls:
+                  raise SystemExit(f"missing Python reference implementation in {path}")
+              readme.read_text(encoding="utf-8")
+              for impl in impls:
+                  print(f"ok  {impl}")
+          PY
+
+      - name: Compile reference implementations
+        run: python -m compileall XSC*
