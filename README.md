@@ -10,6 +10,19 @@ but the scope is broader by design. Future families can cover protocol
 behavior, governance processes, RPC / API conventions, wallet signing
 formats, indexer and event schemas, and tooling interoperability.
 
+## Standards Flow
+
+```mermaid
+flowchart LR
+  Proposal["Standard proposal"] --> Spec["Self-contained README spec"]
+  Spec --> Reference["Reference implementation"]
+  Spec --> Tests["Interoperability tests"]
+  Tests --> Implementers["Wallets, contracts, SDKs, and tools"]
+  Reference --> Implementers
+  Implementers --> Feedback["Compatibility feedback"]
+  Feedback --> Spec
+```
+
 ## Quick Start
 
 Browse a standard by directory. Each standard's directory contains:
