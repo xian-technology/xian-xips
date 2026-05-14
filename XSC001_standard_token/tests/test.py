@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from contracting.client import ContractingClient
+from contracting.local import ContractingClient
 
 
 class TestXSC001Token(unittest.TestCase):
@@ -11,7 +11,7 @@ class TestXSC001Token(unittest.TestCase):
 
         contract_path = Path(__file__).parent.parent / "XSC001.py"
         self.client.submit(contract_path.read_text(), name="currency")
-        self.currency = self.client.get_contract("currency")
+        self.currency = self.client.get_contract_proxy("currency")
 
     def tearDown(self):
         self.client.flush()

@@ -2,7 +2,7 @@ import datetime
 import unittest
 from pathlib import Path
 
-from contracting.client import ContractingClient
+from contracting.local import ContractingClient
 from contracting.stdlib.bridge.hashing import sha3
 from xian_py.wallet import Wallet
 from xian_runtime_types.time import Datetime
@@ -45,8 +45,8 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
         self.client.submit(TOKEN_CODE, name="con_token")
         self.client.submit(contract_path.read_text(), name="permit_authorizer")
 
-        self.token = self.client.get_contract("con_token")
-        self.authorizer = self.client.get_contract("permit_authorizer")
+        self.token = self.client.get_contract_proxy("con_token")
+        self.authorizer = self.client.get_contract_proxy("permit_authorizer")
 
     def tearDown(self):
         self.client.flush()

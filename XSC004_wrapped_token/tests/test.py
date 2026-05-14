@@ -1,7 +1,7 @@
 import unittest
 from pathlib import Path
 
-from contracting.client import ContractingClient
+from contracting.local import ContractingClient
 
 class TestCurrencyContract(unittest.TestCase):
     def setUp(self):
@@ -24,7 +24,7 @@ class TestCurrencyContract(unittest.TestCase):
             code = f.read()
             self.client.submit(code, name="currency")
 
-        self.currency = self.client.get_contract("currency")
+        self.currency = self.client.get_contract_proxy("currency")
         
 
 

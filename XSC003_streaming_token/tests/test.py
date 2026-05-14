@@ -2,7 +2,7 @@ import datetime
 import unittest
 from pathlib import Path
 
-from contracting.client import ContractingClient
+from contracting.local import ContractingClient
 from xian_runtime_types.time import Datetime
 
 
@@ -13,7 +13,7 @@ class TestXSC003StreamingToken(unittest.TestCase):
 
         contract_path = Path(__file__).parent.parent / "XSC0003.py"
         self.client.submit(contract_path.read_text(), name="currency")
-        self.currency = self.client.get_contract("currency")
+        self.currency = self.client.get_contract_proxy("currency")
 
     def tearDown(self):
         self.client.flush()
