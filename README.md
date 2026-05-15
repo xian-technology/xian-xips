@@ -69,6 +69,7 @@ Additional families can be introduced as needed.
 | XSC-002  | Permit authorizer (signature-based approvals) | [`XSC002_permit_authorizer/`](XSC002_permit_authorizer) |
 | XSC-003  | Streaming token             | [`XSC003_streaming_token/`](XSC003_streaming_token)  |
 | XSC-004  | Wrapped token               | [`XSC004_wrapped_token/`](XSC004_wrapped_token)      |
+| XSC-005  | Non-fungible token          | [`XSC005_non_fungible_token/`](XSC005_non_fungible_token) |
 
 ## Repository Conventions
 
@@ -95,5 +96,6 @@ Xian contract development environment (matching `xian-contracting` and
 - [XSC002 — permit authorizer](XSC002_permit_authorizer/README.md)
 - [XSC003 — streaming token](XSC003_streaming_token/README.md)
 - [XSC004 — wrapped token](XSC004_wrapped_token/README.md)
+- [XSC005 — non-fungible token](XSC005_non_fungible_token/README.md)
 - [`../xian-contracting/README.md`](../xian-contracting/README.md) — contracting runtime that powers the reference tests
 - [`../xian-contracts/README.md`](../xian-contracts/README.md) — curated contract hub that builds on these standards
