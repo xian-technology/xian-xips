@@ -154,7 +154,7 @@ def perform_create_stream(
     begins: datetime.datetime,
     closes: datetime.datetime,
 ):
-    stream_id = hashlib.sha3(f"{sender}:{receiver}:{begins}:{closes}:{rate}")
+    stream_id = hashlib.sha3_text(f"{sender}:{receiver}:{begins}:{closes}:{rate}")
 
     assert streams[stream_id, STATUS_KEY] is None, "Stream already exists."
     assert begins < closes, "Stream cannot begin after the close date."

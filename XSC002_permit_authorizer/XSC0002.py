@@ -37,7 +37,7 @@ def permit(
         value=value,
         deadline=str(deadline_time),
     )
-    permit_hash = hashlib.sha3(permit_msg)
+    permit_hash = hashlib.sha3_text(permit_msg)
 
     assert permits[permit_hash] is None, "Permit can only be used once."
     assert now < deadline_time, "Permit has expired."
