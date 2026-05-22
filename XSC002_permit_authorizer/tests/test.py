@@ -1,9 +1,10 @@
 import datetime
+import hashlib
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 from contracting.local import ContractingClient
-from contracting.stdlib.bridge.hashing import sha3
 from xian_py.wallet import Wallet
 from xian_runtime_types.time import Datetime
 
@@ -56,13 +57,30 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
         token_contract: str,
         owner: str,
         spender: str,
-        value: float,
+        value,
         deadline: str,
+        nonce: int,
     ):
-        return (
-            f"{token_contract}:{owner}:{spender}:{value}:{deadline}:"
-            f"permit_authorizer:{self.chain_id}"
+        amount = Decimal(str(value))
+        amount_text = format(amount.normalize(), "f")
+        if "." in amount_text:
+            amount_text = amount_text.rstrip("0").rstrip(".")
+        return "\n".join(
+            [
+                "xian-permit-v2",
+                f"chain_id:{self.chain_id}",
+                "authorizer:permit_authorizer",
+                f"token_contract:{token_contract}",
+                f"owner:{owner}",
+                f"spender:{spender}",
+                f"amount:{amount_text}",
+                f"deadline:{deadline}",
+                f"nonce:{nonce}",
+            ]
         )
+
+    def permit_hash(self, msg: str):
+        return hashlib.sha3_256(msg.encode("utf-8")).hexdigest()
 
     def create_deadline(self, minutes=1):
         d = datetime.datetime.now() + datetime.timedelta(minutes=minutes)
@@ -82,8 +100,9 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender,
             value,
             deadline,
+            nonce=0,
         )
-        permit_hash = sha3(msg)
+        permit_hash = self.permit_hash(msg)
         signature = wallet.sign_msg(msg)
 
         response = self.authorizer.permit(
@@ -92,12 +111,14 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender=spender,
             value=value,
             deadline=deadline,
+            nonce=0,
             signature=signature,
         )
 
         self.assertEqual(response, permit_hash)
         self.assertEqual(self.authorizer.permits[permit_hash], True)
         self.assertEqual(self.token.approvals[owner, spender], value)
+        self.assertEqual(self.authorizer.nonces[owner], 1)
 
     def test_expired_permit_fails(self):
         wallet = Wallet(
@@ -113,6 +134,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender,
             value,
             str(deadline),
+            nonce=0,
         )
         signature = wallet.sign_msg(msg)
 
@@ -123,6 +145,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
                 spender=spender,
                 value=value,
                 deadline=str(deadline),
+                nonce=0,
                 signature=signature,
             )
 
@@ -142,6 +165,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender,
             value,
             deadline,
+            nonce=0,
         )
         signature = wallet.sign_msg(msg + ":tampered")
 
@@ -152,6 +176,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
                 spender=spender,
                 value=value,
                 deadline=deadline,
+                nonce=0,
                 signature=signature,
             )
 
@@ -171,6 +196,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender,
             value,
             deadline,
+            nonce=0,
         )
         signature = wallet.sign_msg(msg)
 
@@ -180,6 +206,7 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
             spender=spender,
             value=value,
             deadline=deadline,
+            nonce=0,
             signature=signature,
         )
 
@@ -190,7 +217,8 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
                 spender=spender,
                 value=value,
                 deadline=deadline,
+                nonce=0,
                 signature=signature,
             )
 
-        self.assertIn("Permit can only be used once", str(context.exception))
+        self.assertIn("Invalid permit nonce", str(context.exception))
