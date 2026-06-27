@@ -27,6 +27,27 @@ def canonical_amount(value: Any):
     return amount
 
 
+def canonical_amount_text(amount: Any):
+    # Render a non-negative decimal as a plain canonical string that matches the
+    # off-chain signer. str(decimal(...)) would emit engineering notation (e.g.
+    # "1E+6" for 1000000), which never matches the message the payer signed and
+    # would break every permit for round amounts.
+    whole = int(amount)
+    fraction = amount - whole
+    text = str(whole)
+    if fraction > 0:
+        digits = ""
+        for i in range(30):
+            fraction = fraction * 10
+            digit = int(fraction)
+            digits = digits + str(digit)
+            fraction = fraction - digit
+            if fraction == 0:
+                break
+        text = text + "." + digits
+    return text
+
+
 def require_token(token_contract: str):
     assert importlib.exists(token_contract), "Token contract does not exist."
     assert importlib.enforce_interface(token_contract, TOKEN_PERMIT_INTERFACE), (
@@ -109,7 +130,7 @@ def construct_permit_msg(
         + spender
         + NEWLINE
         + "amount:"
-        + str(amount)
+        + canonical_amount_text(amount)
         + NEWLINE
         + "deadline:"
         + deadline

@@ -120,6 +120,42 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
         self.assertEqual(self.token.approvals[owner, spender], value)
         self.assertEqual(self.authorizer.nonces[owner], 1)
 
+    def test_valid_permit_round_amounts(self):
+        # Regression: round amounts (>= 1000) whose decimal normalizes with a
+        # positive exponent used to be rendered by str(decimal(...)) as
+        # engineering notation ("1E+6"), which never matched the plain-decimal
+        # "amount:1000000" the payer signs, so every such permit was rejected.
+        wallet = Wallet(
+            "ed30796abc4ab47a97bfb37359f50a9c362c7b304a4b4ad1b3f5369ecb6f7fd8"
+        )
+        owner = wallet.public_key
+        spender = "some_spender"
+        deadline = str(self.create_deadline())
+
+        for nonce, value in enumerate((1000, 12000, 1000000, 2500000)):
+            msg = self.construct_permit_msg(
+                "con_token",
+                owner,
+                spender,
+                value,
+                deadline,
+                nonce=nonce,
+            )
+            signature = wallet.sign_msg(msg)
+
+            self.authorizer.permit(
+                token_contract="con_token",
+                owner=owner,
+                spender=spender,
+                value=value,
+                deadline=deadline,
+                nonce=nonce,
+                signature=signature,
+            )
+
+            self.assertEqual(self.token.approvals[owner, spender], value)
+            self.assertEqual(self.authorizer.nonces[owner], nonce + 1)
+
     def test_expired_permit_fails(self):
         wallet = Wallet(
             "ed30796abc4ab47a97bfb37359f50a9c362c7b304a4b4ad1b3f5369ecb6f7fd8"
