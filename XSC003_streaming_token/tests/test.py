@@ -82,6 +82,71 @@ class TestXSC003StreamingToken(unittest.TestCase):
         self.assertEqual(self.currency.balances[sender], 0)
         self.assertEqual(self.currency.streams[stream_id, "claimed"], 3600)
 
+    def test_balance_stream_accrues_exact_day_duration(self):
+        sender = "alice"
+        receiver = "bob"
+        begins = self.create_date(2023, 1, 1)
+        closes = self.create_date(2023, 1, 2)
+        expected_due = 24 * 60 * 60
+        self.currency.balances[sender] = expected_due
+
+        stream_id = self.currency.create_stream(
+            receiver=receiver,
+            rate=1,
+            begins=str(begins),
+            closes=str(closes),
+            signer=sender,
+        )
+
+        with self.assertRaises(Exception):
+            self.currency.finalize_stream(
+                stream_id=stream_id,
+                signer=sender,
+                environment={"now": closes},
+            )
+
+        self.currency.balance_stream(
+            stream_id=stream_id,
+            signer=receiver,
+            environment={"now": closes},
+        )
+        self.currency.finalize_stream(
+            stream_id=stream_id,
+            signer=sender,
+            environment={"now": closes},
+        )
+
+        self.assertEqual(self.currency.balances[receiver], expected_due)
+        self.assertEqual(self.currency.balances[sender], 0)
+        self.assertEqual(self.currency.streams[stream_id, "claimed"], expected_due)
+        self.assertEqual(self.currency.streams[stream_id, "status"], "finalized")
+
+    def test_balance_stream_accrues_multi_day_duration(self):
+        sender = "alice"
+        receiver = "bob"
+        begins = self.create_date(2023, 1, 1)
+        closes = self.create_date(2023, 1, 3, hour=1)
+        expected_due = ((2 * 24) + 1) * 60 * 60
+        self.currency.balances[sender] = expected_due
+
+        stream_id = self.currency.create_stream(
+            receiver=receiver,
+            rate=1,
+            begins=str(begins),
+            closes=str(closes),
+            signer=sender,
+        )
+
+        self.currency.balance_stream(
+            stream_id=stream_id,
+            signer=receiver,
+            environment={"now": closes},
+        )
+
+        self.assertEqual(self.currency.balances[receiver], expected_due)
+        self.assertEqual(self.currency.balances[sender], 0)
+        self.assertEqual(self.currency.streams[stream_id, "claimed"], expected_due)
+
     def test_finalize_stream_requires_zero_outstanding_balance(self):
         sender = "alice"
         receiver = "bob"

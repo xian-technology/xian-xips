@@ -325,6 +325,8 @@ def calc_outstanding_balance(
 ) -> float:
     claimable_end_point = now if now < closes else closes
     claimable_period = claimable_end_point - begins
+    # Xian Timedelta.seconds is total elapsed seconds; Python stdlib
+    # datetime.timedelta.seconds would drop whole days.
     claimable_seconds = claimable_period.seconds
     amount_due = (rate * claimable_seconds) - claimed
     return amount_due
