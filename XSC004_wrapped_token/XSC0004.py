@@ -1,8 +1,13 @@
 balances = Hash(default_value=0)
 approvals = Hash(default_value=0)
 metadata = Hash()
+withdrawal_count = Variable()
 
 minter = Variable()
+
+MAX_DESTINATION_CHAIN_LENGTH = 64
+MAX_DESTINATION_ADDRESS_LENGTH = 256
+MAX_MEMO_LENGTH = 256
 
 
 TransferEvent = LogEvent(
@@ -33,6 +38,10 @@ BurnEvent = LogEvent(
     {
         "from": indexed(str),
         "amount": (int, float, decimal),
+        "destination_chain": indexed(str),
+        "destination_address": str,
+        "withdrawal_id": indexed(str),
+        "memo": str,
     },
 )
 
@@ -48,6 +57,27 @@ def seed():
     metadata["operator"] = ctx.caller
 
     minter.set(ctx.caller)
+    withdrawal_count.set(0)
+
+
+def require_text(value: str, field_name: str, max_length: int):
+    assert isinstance(value, str), field_name + " must be a string."
+
+    normalized = value.strip()
+    assert normalized != "", field_name + " must be non-empty."
+    assert len(normalized) <= max_length, field_name + " is too long."
+
+    return normalized
+
+
+def normalize_memo(memo: str):
+    if memo is None:
+        return ""
+
+    assert isinstance(memo, str), "memo must be a string."
+    assert len(memo) <= MAX_MEMO_LENGTH, "memo is too long."
+
+    return memo
 
 
 @export
@@ -113,11 +143,43 @@ def mint(amount: float, to: str):
 
 
 @export
-def burn(amount: float):
+def burn(
+    amount: float,
+    destination_chain: str,
+    destination_address: str,
+    memo: str = "",
+):
     assert amount > 0, "Cannot burn negative balances."
     assert balances[ctx.caller] >= amount, "Not enough coins to burn."
 
+    destination_chain = require_text(
+        destination_chain,
+        "destination_chain",
+        MAX_DESTINATION_CHAIN_LENGTH,
+    )
+    destination_address = require_text(
+        destination_address,
+        "destination_address",
+        MAX_DESTINATION_ADDRESS_LENGTH,
+    )
+    memo = normalize_memo(memo)
+
+    withdrawal_nonce = withdrawal_count.get()
+    withdrawal_id = ctx.this + ":" + str(withdrawal_nonce)
+
     balances[ctx.caller] -= amount
     metadata["total_supply"] -= amount
+    withdrawal_count.set(withdrawal_nonce + 1)
 
-    BurnEvent({"from": ctx.caller, "amount": amount})
+    BurnEvent(
+        {
+            "from": ctx.caller,
+            "amount": amount,
+            "destination_chain": destination_chain,
+            "destination_address": destination_address,
+            "withdrawal_id": withdrawal_id,
+            "memo": memo,
+        }
+    )
+
+    return withdrawal_id

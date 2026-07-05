@@ -3,6 +3,11 @@ from pathlib import Path
 
 from contracting.local import ContractingClient
 
+
+DESTINATION_CHAIN = "solana"
+DESTINATION_ADDRESS = "9sTh4jTbCdojzNASFPntijXe7NmfKYL8aBrTN6yD1Nv5"
+
+
 class TestCurrencyContract(unittest.TestCase):
     def setUp(self):
 
@@ -139,34 +144,127 @@ class TestCurrencyContract(unittest.TestCase):
         with self.assertRaises(Exception):
             self.currency.mint(amount=-10, to="bob", signer="sys")
 
-    def test_burn_happy_path(self):
+    def test_burn_happy_path_emits_unambiguous_withdrawal_signal(self):
         # GIVEN sys has 1,000,000 tokens
         initial_supply = self.currency.metadata["total_supply"]
         initial_balance = self.currency.balances["sys"]
         burn_amount = 1000
-        
+
         # WHEN sys burns 1000 tokens
-        self.currency.burn(amount=burn_amount, signer="sys")
-        
+        output = self.client.executor.execute(
+            sender="sys",
+            contract_name="currency",
+            function_name="burn",
+            kwargs={
+                "amount": burn_amount,
+                "destination_chain": DESTINATION_CHAIN,
+                "destination_address": DESTINATION_ADDRESS,
+                "memo": "bridge-request-1",
+            },
+            environment=self.environment,
+        )
+
         # THEN sys's balance and total supply should be reduced
+        self.assertEqual(output["status_code"], 0)
+        withdrawal_id = output["result"]
+        self.assertEqual(withdrawal_id, "currency:0")
         self.assertEqual(self.currency.balances["sys"], initial_balance - burn_amount)
         self.assertEqual(
-            self.currency.metadata["total_supply"], 
-            initial_supply - burn_amount
+            self.currency.metadata["total_supply"],
+            initial_supply - burn_amount,
         )
+        self.assertEqual(self.currency.withdrawal_count.get(), 1)
+
+        event = output["events"][-1]
+        self.assertEqual(event["event"], "Burn")
+        self.assertEqual(
+            event["data_indexed"],
+            {
+                "from": "sys",
+                "destination_chain": DESTINATION_CHAIN,
+                "withdrawal_id": "currency:0",
+            },
+        )
+        self.assertEqual(
+            event["data"],
+            {
+                "amount": burn_amount,
+                "destination_address": DESTINATION_ADDRESS,
+                "memo": "bridge-request-1",
+            },
+        )
+
+    def test_burn_increments_withdrawal_ids(self):
+        first = self.currency.burn(
+            amount=100,
+            destination_chain=DESTINATION_CHAIN,
+            destination_address=DESTINATION_ADDRESS,
+            signer="sys",
+        )
+        second = self.currency.burn(
+            amount=200,
+            destination_chain=DESTINATION_CHAIN,
+            destination_address=DESTINATION_ADDRESS,
+            signer="sys",
+        )
+
+        self.assertEqual(first, "currency:0")
+        self.assertEqual(second, "currency:1")
+        self.assertEqual(self.currency.withdrawal_count.get(), 2)
 
     def test_burn_cannot_be_zero_or_negative(self):
         with self.assertRaises(Exception):
-            self.currency.burn(amount=0, signer="sys")
+            self.currency.burn(
+                amount=0,
+                destination_chain=DESTINATION_CHAIN,
+                destination_address=DESTINATION_ADDRESS,
+                signer="sys",
+            )
 
         with self.assertRaises(Exception):
-            self.currency.burn(amount=-10, signer="sys")
+            self.currency.burn(
+                amount=-10,
+                destination_chain=DESTINATION_CHAIN,
+                destination_address=DESTINATION_ADDRESS,
+                signer="sys",
+            )
 
     def test_burn_more_than_balance(self):
         # GIVEN sys tries to burn more than their current balance
         big_amount = self.currency.balances["sys"] + 1_000_000
         with self.assertRaises(Exception):
-            self.currency.burn(amount=big_amount, signer="sys")
+            self.currency.burn(
+                amount=big_amount,
+                destination_chain=DESTINATION_CHAIN,
+                destination_address=DESTINATION_ADDRESS,
+                signer="sys",
+            )
+
+    def test_burn_requires_destination_fields(self):
+        with self.assertRaises(Exception):
+            self.currency.burn(
+                amount=10,
+                destination_chain="",
+                destination_address=DESTINATION_ADDRESS,
+                signer="sys",
+            )
+
+        with self.assertRaises(Exception):
+            self.currency.burn(
+                amount=10,
+                destination_chain=DESTINATION_CHAIN,
+                destination_address="",
+                signer="sys",
+            )
+
+        with self.assertRaises(Exception):
+            self.currency.burn(
+                amount=10,
+                destination_chain=DESTINATION_CHAIN,
+                destination_address=DESTINATION_ADDRESS,
+                memo="x" * 257,
+                signer="sys",
+            )
 
 
 

@@ -9,7 +9,7 @@ When tokens from an external chain are deposited into a bridge or custody soluti
 The contract includes:
 
 - A **minter** role (which can be assigned to either a wallet address or another contract) that controls the minting of new wrapped tokens.
-- A **burn** function, enabling token holders to unwrap and destroy the wrapped tokens on Xian.
+- A **burn** function, enabling token holders to request an unwrap by destroying wrapped tokens on Xian and naming the external destination.
 - Standard token operations (`transfer`, `approve`, `transfer_from`) for fungible tokens.
 - Metadata management for storing and updating token details.
 
@@ -105,12 +105,18 @@ Mints (creates) new tokens on the Xian chain, increasing the total supply. Used 
 
 ---
 
-### 9. `burn(amount: float)`
+### 9. `burn(amount: float, destination_chain: str, destination_address: str, memo: str = "")`
 
-Burns (destroys) the caller’s tokens, decreasing the total supply. Used to “unwrap” tokens when returning them to the original chain.
+Burns (destroys) the caller’s tokens, decreasing the total supply. Used to “unwrap” tokens when returning them to the original chain. The destination fields are part of the required withdrawal signal so bridge watchers do not need to infer where the external-chain release should go.
 
 **Parameters:**
 - `amount`: Number of tokens to burn (must be positive).
+- `destination_chain`: External chain identifier, such as `solana`.
+- `destination_address`: Recipient address on `destination_chain`.
+- `memo`: Optional bounded correlation value for the bridge request, quote, or UI flow.
+
+**Returns:**
+- `withdrawal_id`: A contract-generated id in the form `<contract>:<nonce>`. This id is also emitted in the burn event and is the recommended idempotency key for bridge watchers.
 
 ---
 
@@ -121,7 +127,7 @@ The contract emits the following events to the log for external tracking and aud
 - **TransferEvent**: Fired whenever tokens are transferred (via `transfer` or `transfer_from`).
 - **ApproveEvent**: Fired whenever a token approval is set (via `approve`).
 - **MintEvent**: Fired whenever new tokens are minted (via `mint`).
-- **BurnEvent**: Fired whenever tokens are burned (via `burn`).
+- **BurnEvent**: Fired whenever tokens are burned (via `burn`). The event includes `from`, `amount`, `destination_chain`, `destination_address`, `withdrawal_id`, and `memo`. Watchers should key release processing by `(contract, withdrawal_id)` and should treat `destination_chain` and `destination_address` as the canonical external routing fields.
 
 ## Usage Scenarios
 
@@ -137,8 +143,13 @@ The contract emits the following events to the log for external tracking and aud
    - Holders of wrapped tokens can freely transfer them or use `approve/transfer_from` to participate in DeFi or other DApps on the Xian chain.
 
 4. **Unwrapping Tokens**  
-   - The holder calls `burn()` to destroy their wrapped tokens on Xian.  
-   - The bridge on the other chain detects the burn event and releases or unlocks the original tokens to the holder’s address on the external chain.
+   - The holder calls `burn()` with the external chain and recipient address to destroy their wrapped tokens on Xian.  
+   - The bridge on the other chain detects the burn event and releases or unlocks the original tokens to the event’s `destination_address` on `destination_chain`.
+   - The bridge records the event’s `withdrawal_id` to make release processing idempotent.
+
+## Bridge Deployment Template
+
+`bridge_template.py` is the canonical XSC004 deployment template for bridge services that need placeholder token metadata and zero initial supply. Runtime deployments can vendor this template, but they should keep it synchronized with the standard so burn events remain interoperable.
 
 ## Contact
 
