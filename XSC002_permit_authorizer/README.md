@@ -1,5 +1,12 @@
 # XSC002 Permit Authorizer
 
+> Fresh-chain applicability: XSC002 permit authorization and legacy stream permit
+> relays are historical reference protocols. Current genesis currency does not
+> support them. Use direct authenticated currency approvals and the maintained
+> caller-authorized `xian-contracts` stream package. Reference code here is not
+> part of the new-chain genesis or deployment bundle.
+
+
 `XSC002` standardizes signature-based token approvals through a standalone
 authorizer contract.
 

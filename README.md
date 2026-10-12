@@ -1,5 +1,12 @@
 # xian-xips
 
+> Fresh-chain applicability: XSC002 permit authorization and legacy stream permit
+> relays are historical reference protocols. Current genesis currency does not
+> support them. Use direct authenticated currency approvals and the maintained
+> caller-authorized `xian-contracts` stream package. Reference code here is not
+> part of the new-chain genesis or deployment bundle.
+
+
 `xian-xips` is the umbrella repository for **Xian Standards and
 Improvement Proposals**. It hosts the public specifications,
 reference implementations, and interoperability tests that other repos
@@ -66,7 +73,7 @@ Additional families can be introduced as needed.
 | ID       | Title                       | Directory                                            |
 | -------- | --------------------------- | ---------------------------------------------------- |
 | XSC-001  | Standard fungible token     | [`XSC001_standard_token/`](XSC001_standard_token)    |
-| XSC-002  | Permit authorizer (signature-based approvals) | [`XSC002_permit_authorizer/`](XSC002_permit_authorizer) |
+| XSC-002  | Historical permit authorizer (unsupported by current currency) | [`XSC002_permit_authorizer/`](XSC002_permit_authorizer) |
 | XSC-003  | Streaming token             | [`XSC003_streaming_token/`](XSC003_streaming_token)  |
 | XSC-004  | Wrapped token               | [`XSC004_wrapped_token/`](XSC004_wrapped_token)      |
 | XSC-005  | Non-fungible token          | [`XSC005_non_fungible_token/`](XSC005_non_fungible_token) |

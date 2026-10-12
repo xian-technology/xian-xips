@@ -110,7 +110,7 @@ token_data[token_id, "created"] = now
 token_data[token_id, "mime_type"] = "image/svg+xml"
 token_data[token_id, "encoding"] = "utf8"
 token_data[token_id, "content"] = "<svg>...</svg>"
-token_data[token_id, "content_hash"] = hashlib.sha256(content)
+token_data[token_id, "content_hash"] = hashlib.sha256_text(content)
 token_data[token_id, "uri"] = ""
 ```
 
@@ -171,7 +171,7 @@ hash_source = (
     + ":"
     + pixels
 )
-token_data[token_id, "content_hash"] = hashlib.sha256(hash_source)
+token_data[token_id, "content_hash"] = hashlib.sha256_text(hash_source)
 ```
 
 ## Expected Events

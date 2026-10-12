@@ -79,6 +79,5 @@ can query them efficiently.
 
 - Use non-negative approvals and overwrite semantics
 - Keep argument names stable for SDK and tooling interoperability
-- If a token also wants to support XSC002, it can add an
-  `approve_from_authorizer(owner, spender, amount)` extension without changing
-  the XSC001 core surface
+- Current currency uses authenticated transaction approvals. The historical
+  XSC002 extension is not part of its interface.

@@ -1,12 +1,18 @@
 # XSC003 Streaming Token
 
+> Fresh-chain applicability: XSC002 permit authorization and legacy stream permit
+> relays are historical reference protocols. Current genesis currency does not
+> support them. Use direct authenticated currency approvals and the maintained
+> caller-authorized `xian-contracts` stream package. Reference code here is not
+> part of the new-chain genesis or deployment bundle.
+
+
 `XSC003` extends the XSC001 fungible-token model with native streaming payment
 primitives.
 
 This standard is for a standalone streaming token contract. It keeps the normal
 token surface and adds stream lifecycle methods. Signature-based permit logic is
-not part of XSC003; if a deployment also wants that behavior, combine the token
-with an external XSC002 permit authorizer.
+not part of XSC003. Current integrations use authenticated transaction callers.
 
 ## XSC001 Core
 
@@ -85,5 +91,5 @@ Implementations should emit:
 
 - XSC003 does not standardize `create_stream_from_permit`
 - XSC003 does not require a `permits` hash
-- If signature-based approvals are needed, pair the token with XSC002 instead
-  of embedding permit logic into the streaming token itself
+- Use direct authenticated token approvals; XSC002 is a historical protocol
+  unsupported by current genesis currency.
