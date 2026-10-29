@@ -1,5 +1,18 @@
 # Repository Guidelines
 
+## Validation
+
+- Use a Python environment with matching `xian-contracting`, `xian-tech-py`, and
+  `pytest` packages, such as the sibling `xian-py` development environment with
+  its `compile` extra. XSC002 imports the SDK's wallet helper.
+- Run `python -m pytest tests/` from the repository root for the storage-isolation
+  safeguard.
+- From each changed standard's directory, run `python -m pytest tests/test.py`.
+  These reference suites use the explicit filename `test.py`.
+- Keep the root `conftest.py` active so default contract clients use disposable
+  storage instead of the host node's state directory. Do not bypass it when
+  running reference tests.
+
 ## Shared Agent Practices
 - Keep changes clean, modular, and professional. Prefer small, cohesive modules, clear naming, explicit boundaries, and tests over quick patches.
 - When code behavior, public APIs, user workflows, operator workflows, or configuration semantics change, check whether `../xian-docs-web` needs corresponding documentation updates. If this repo is `xian-docs-web`, update the relevant published docs in place. Write durable user/developer documentation, not a changelog entry.

@@ -83,12 +83,17 @@ Additional families can be introduced as needed.
 
 ```bash
 # From inside a standard's directory:
-uv run pytest tests/        # or the repo's preferred test runner
+uv run pytest tests/test.py
 ```
 
 Most standards include Contracting-based reference tests. Use the local
 Xian contract development environment (matching `xian-contracting` and
-`xian-linter`) when running them.
+`xian-linter`) when running them. The XSC002 suite also requires `xian-tech-py`
+for its wallet helper.
+The root `conftest.py` configures disposable contract storage before test
+collection, including tests run from a standard's directory. It leaves the
+host node's state directory untouched. Run `pytest tests/` from the repository
+root to check this isolation safeguard.
 
 ## Related Docs
 
