@@ -6,11 +6,11 @@
   `pytest` packages, such as the sibling `xian-py` development environment with
   its `compile` extra. XSC002 imports the SDK's wallet helper.
 - Run `python -m pytest tests/` from the repository root for the storage-isolation
-  safeguard.
+  safeguards, including all reference suites in separate subprocesses.
 - From each changed standard's directory, run `python -m pytest tests/test.py`.
   These reference suites use the explicit filename `test.py`.
-- Keep the root `conftest.py` active so default contract clients use disposable
-  storage instead of the host node's state directory. Do not bypass it when
+- Keep the root `pytest.ini` and `conftest.py` active so default contract clients
+  use disposable storage instead of the host node's state directory. Do not bypass them when
   running reference tests.
 
 ## Shared Agent Practices

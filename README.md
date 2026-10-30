@@ -90,10 +90,13 @@ Most standards include Contracting-based reference tests. Use the local
 Xian contract development environment (matching `xian-contracting` and
 `xian-linter`) when running them. The XSC002 suite also requires `xian-tech-py`
 for its wallet helper.
-The root `conftest.py` configures disposable contract storage before test
+The root `pytest.ini` anchors test discovery at this repository, and
+`conftest.py` configures disposable contract storage before test
 collection, including tests run from a standard's directory. It leaves the
 host node's state directory untouched. Run `pytest tests/` from the repository
-root to check this isolation safeguard.
+root to check this isolation safeguard and run every standard's reference
+suite in a separate subprocess. These checks verify storage isolation and
+cleanup for the same child-directory invocation shown above.
 
 ## Related Docs
 
