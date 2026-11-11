@@ -58,7 +58,10 @@ nonce:{nonce}
 ```
 
 `canonical_amount` is the decimal value after contract-side normalization with
-`decimal(str(value))`. Including the token contract, authorizer contract, chain
+`decimal(str(value))`, rendered as plain decimal text: no exponent and no
+trailing fractional zeros (for example `1000000`, not `1E+6`; `1.5`, not
+`1.50`). The reference contract does this in `canonical_amount_text`;
+off-chain signers can use `xian_py.x402.canonical_permit_amount`. Including the token contract, authorizer contract, chain
 id, and nonce prevents replay across contracts, networks, and permit slots.
 
 ## Expected Behavior
