@@ -9,7 +9,7 @@ TransferEvent = LogEvent(
     {
         "from": indexed(str),
         "to": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
     },
 )
 ApproveEvent = LogEvent(
@@ -17,7 +17,7 @@ ApproveEvent = LogEvent(
     {
         "from": indexed(str),
         "to": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
     },
 )
 
@@ -47,7 +47,7 @@ def balance_of(address: str):
 
 
 @export
-def transfer(amount: float, to: str):
+def transfer(amount: decimal, to: str):
     assert amount > 0, "Cannot send negative balances!"
     assert balances[ctx.caller] >= amount, "Not enough coins to send!"
 
@@ -58,7 +58,7 @@ def transfer(amount: float, to: str):
 
 
 @export
-def approve(amount: float, to: str):
+def approve(amount: decimal, to: str):
     assert amount >= 0, "Cannot approve negative balances!"
 
     approvals[ctx.caller, to] = amount
@@ -66,7 +66,7 @@ def approve(amount: float, to: str):
 
 
 @export
-def transfer_from(amount: float, to: str, main_account: str):
+def transfer_from(amount: decimal, to: str, main_account: str):
     assert amount > 0, "Cannot send negative balances!"
     assert (
         approvals[main_account, ctx.caller] >= amount

@@ -17,19 +17,19 @@ def seed():
     balances[ctx.caller] = 1000000
 
 @export
-def transfer(amount: float, to: str):
+def transfer(amount: decimal, to: str):
     assert amount > 0, "Amount must be positive"
     assert balances[ctx.caller] >= amount, "Insufficient balance"
     balances[ctx.caller] -= amount
     balances[to] += amount
 
 @export
-def approve(amount: float, to: str):
+def approve(amount: decimal, to: str):
     assert amount >= 0, "Amount must be non-negative"
     approvals[ctx.caller, to] = amount
 
 @export
-def transfer_from(amount: float, to: str, main_account: str):
+def transfer_from(amount: decimal, to: str, main_account: str):
     assert amount > 0, "Amount must be positive"
     assert approvals[main_account, ctx.caller] >= amount, "Insufficient allowance"
     assert balances[main_account] >= amount, "Insufficient balance"
@@ -62,7 +62,7 @@ def owner_of(token_id: str):
 
 class TestXSC005(unittest.TestCase):
     def setUp(self):
-        self.client = ContractingClient()
+        self.client = ContractingClient(vm_profile="xian_vm_v2")
         self.client.flush()
 
         self.client.submit(PAYMENT_TOKEN, name="currency")

@@ -31,7 +31,7 @@ To work with an XSC002 authorizer, a token should expose:
 
 ```python
 @export
-def approve_from_authorizer(owner: str, spender: str, amount: float):
+def approve_from_authorizer(owner: str, spender: str, amount: decimal):
     ...
 ```
 

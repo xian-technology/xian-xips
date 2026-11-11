@@ -40,7 +40,7 @@ Updates the token metadata. Only the operator (stored in `metadata["operator"]`)
 
 ---
 
-### 3. `transfer(amount: float, to: str)`
+### 3. `transfer(amount: decimal, to: str)`
 
 Moves tokens from the caller’s balance to another address.
 
@@ -50,7 +50,7 @@ Moves tokens from the caller’s balance to another address.
 
 ---
 
-### 4. `approve(amount: float, to: str)`
+### 4. `approve(amount: decimal, to: str)`
 
 Allows the caller (token holder) to approve another account to transfer up to `amount` tokens on their behalf.
 
@@ -60,7 +60,7 @@ Allows the caller (token holder) to approve another account to transfer up to `a
 
 ---
 
-### 5. `transfer_from(amount: float, to: str, main_account: str)`
+### 5. `transfer_from(amount: decimal, to: str, main_account: str)`
 
 Executes a transfer on behalf of `main_account`, as long as the caller has been approved via [`approve`](#4-approveamount-float-to-str).
 
@@ -92,7 +92,7 @@ Changes the `minter` role to another address or contract. Only the current minte
 
 ---
 
-### 8. `mint(amount: float, to: str)`
+### 8. `mint(amount: decimal, to: str)`
 
 Mints (creates) new tokens on the Xian chain, increasing the total supply. Used to “wrap” tokens when they are locked or deposited in a corresponding bridge on the original chain.
 
@@ -105,7 +105,7 @@ Mints (creates) new tokens on the Xian chain, increasing the total supply. Used 
 
 ---
 
-### 9. `burn(amount: float, destination_chain: str, destination_address: str, memo: str = "")`
+### 9. `burn(amount: decimal, destination_chain: str, destination_address: str, memo: str = "")`
 
 Burns (destroys) the caller’s tokens, decreasing the total supply. Used to “unwrap” tokens when returning them to the original chain. The destination fields are part of the required withdrawal signal so bridge watchers do not need to infer where the external-chain release should go.
 

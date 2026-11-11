@@ -8,7 +8,7 @@ from xian_runtime_types.time import Datetime
 
 class TestXSC003StreamingToken(unittest.TestCase):
     def setUp(self):
-        self.client = ContractingClient()
+        self.client = ContractingClient(vm_profile="xian_vm_v2")
         self.client.flush()
 
         contract_path = Path(__file__).parent.parent / "XSC0003.py"

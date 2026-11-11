@@ -18,7 +18,7 @@ ApproveEvent = LogEvent(
     {
         "from": indexed(str),
         "to": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
     },
 )
 
@@ -27,7 +27,7 @@ def seed():
     metadata["permit_authorizer"] = "permit_authorizer"
 
 @export
-def approve_from_authorizer(owner: str, spender: str, amount: float):
+def approve_from_authorizer(owner: str, spender: str, amount: decimal):
     authorizer = metadata["permit_authorizer"] or "permit_authorizer"
     assert ctx.caller == authorizer, "Only permit authorizer can approve on behalf of others."
     assert amount >= 0, "Cannot approve negative balances."
@@ -39,7 +39,7 @@ def approve_from_authorizer(owner: str, spender: str, amount: float):
 class TestXSC002PermitAuthorizer(unittest.TestCase):
     def setUp(self):
         self.chain_id = "test-chain"
-        self.client = ContractingClient(environment={"chain_id": self.chain_id})
+        self.client = ContractingClient(vm_profile="xian_vm_v2", environment={"chain_id": self.chain_id})
         self.client.flush()
 
         contract_path = Path(__file__).parent.parent / "XSC0002.py"

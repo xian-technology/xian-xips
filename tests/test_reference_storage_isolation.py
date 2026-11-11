@@ -31,7 +31,7 @@ class StorageProbe:
         assert self.storage.is_dir()
         default = inspect.signature(ContractingClient).parameters["storage_home"].default
         assert default == self.storage, "client cached a different storage default"
-        with ContractingClient() as client:
+        with ContractingClient(vm_profile="xian_vm_v2") as client:
             assert client.raw_driver.storage_home == self.storage
             client.flush()
         print("ISOLATED_REFERENCE_STORAGE", self.storage)
@@ -47,7 +47,7 @@ raise SystemExit(result)
 @pytest.mark.parametrize("standard", STANDARDS)
 def test_reference_suite_from_standard_directory_preserves_host_storage(standard, tmp_path):
     host_storage = tmp_path / "host-node-state"
-    with Driver(storage_home=host_storage) as driver:
+    with Driver(vm_profile="xian_vm_v2", storage_home=host_storage) as driver:
         driver.set("host-sentinel", "must survive reference tests")
         driver.commit()
 
@@ -59,7 +59,7 @@ def test_reference_suite_from_standard_directory_preserves_host_storage(standard
         timeout=120,
     )
 
-    with Driver(storage_home=host_storage) as driver:
+    with Driver(vm_profile="xian_vm_v2", storage_home=host_storage) as driver:
         assert driver.get("host-sentinel") == "must survive reference tests"
     assert result.returncode == 0, result.stdout + result.stderr
     assert "ISOLATED_REFERENCE_STORAGE" in result.stdout

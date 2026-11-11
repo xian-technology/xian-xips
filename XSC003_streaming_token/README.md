@@ -24,7 +24,7 @@ It should keep balances and approvals in separate hashes.
 
 ```python
 @export
-def create_stream(receiver: str, rate: float, begins: str, closes: str):
+def create_stream(receiver: str, rate: decimal, begins: str, closes: str):
     ...
 
 @export

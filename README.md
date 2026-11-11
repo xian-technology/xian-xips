@@ -33,7 +33,7 @@ Browse a standard by directory. Each standard's directory contains:
   intended behavior of the standard.
 
 To run the reference tests, use the local Xian contract development
-environment that matches the rest of the stack (`xian-contracting` plus
+environment that matches the rest of the stack (`xian-tech-contracting[v2]>=1.1.4` plus
 `xian-linter` siblings, see those repos' READMEs).
 
 ## Principles

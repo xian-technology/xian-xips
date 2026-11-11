@@ -8,7 +8,7 @@ TransferEvent = LogEvent(
     {
         "from": indexed(str),
         "to": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
     },
 )
 ApproveEvent = LogEvent(
@@ -16,7 +16,7 @@ ApproveEvent = LogEvent(
     {
         "from": indexed(str),
         "to": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
     },
 )
 StreamCreatedEvent = LogEvent(
@@ -25,7 +25,7 @@ StreamCreatedEvent = LogEvent(
         "sender": indexed(str),
         "receiver": indexed(str),
         "stream_id": indexed(str),
-        "rate": (int, float, decimal),
+        "rate": (int, decimal),
         "begins": str,
         "closes": str,
     },
@@ -36,7 +36,7 @@ StreamBalanceEvent = LogEvent(
         "receiver": indexed(str),
         "sender": indexed(str),
         "stream_id": indexed(str),
-        "amount": (int, float, decimal),
+        "amount": (int, decimal),
         "balancer": str,
     },
 )
@@ -99,7 +99,7 @@ def change_metadata(key: str, value: Any):
 
 
 @export
-def transfer(amount: float, to: str):
+def transfer(amount: decimal, to: str):
     assert amount > 0, "Cannot send negative balances."
     assert balances[ctx.caller] >= amount, "Not enough coins to send."
 
@@ -110,7 +110,7 @@ def transfer(amount: float, to: str):
 
 
 @export
-def approve(amount: float, to: str):
+def approve(amount: decimal, to: str):
     assert amount >= 0, "Cannot approve negative balances."
     approvals[ctx.caller, to] = amount
 
@@ -118,7 +118,7 @@ def approve(amount: float, to: str):
 
 
 @export
-def transfer_from(amount: float, to: str, main_account: str):
+def transfer_from(amount: decimal, to: str, main_account: str):
     assert amount > 0, "Cannot send negative balances."
     assert (
         approvals[main_account, ctx.caller] >= amount
@@ -138,7 +138,7 @@ def balance_of(address: str):
 
 
 @export
-def create_stream(receiver: str, rate: float, begins: str, closes: str):
+def create_stream(receiver: str, rate: decimal, begins: str, closes: str):
     begins = strptime_ymdhms(begins)
     closes = strptime_ymdhms(closes)
     sender = ctx.caller
@@ -150,7 +150,7 @@ def create_stream(receiver: str, rate: float, begins: str, closes: str):
 def perform_create_stream(
     sender: str,
     receiver: str,
-    rate: float,
+    rate: decimal,
     begins: datetime.datetime,
     closes: datetime.datetime,
 ):
@@ -320,9 +320,9 @@ def forfeit_stream(stream_id: str) -> str:
 def calc_outstanding_balance(
     begins: datetime.datetime,
     closes: datetime.datetime,
-    rate: float,
-    claimed: float,
-) -> float:
+    rate: decimal,
+    claimed: decimal,
+) -> decimal:
     claimable_end_point = now if now < closes else closes
     claimable_period = claimable_end_point - begins
     # Xian Timedelta.seconds is total elapsed seconds; Python stdlib
@@ -332,7 +332,7 @@ def calc_outstanding_balance(
     return amount_due
 
 
-def calc_claimable_amount(amount_due: float, sender: str) -> float:
+def calc_claimable_amount(amount_due: decimal, sender: str) -> decimal:
     return amount_due if amount_due < balances[sender] else balances[sender]
 
 

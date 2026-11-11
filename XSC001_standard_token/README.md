@@ -14,15 +14,15 @@ def change_metadata(key: str, value: Any):
     ...
 
 @export
-def transfer(amount: float, to: str):
+def transfer(amount: decimal, to: str):
     ...
 
 @export
-def approve(amount: float, to: str):
+def approve(amount: decimal, to: str):
     ...
 
 @export
-def transfer_from(amount: float, to: str, main_account: str):
+def transfer_from(amount: decimal, to: str, main_account: str):
     ...
 
 @export

@@ -17,7 +17,7 @@ class TestCurrencyContract(unittest.TestCase):
             "chain_id": self.chain_id
         }
 
-        self.client = ContractingClient(environment=self.environment)
+        self.client = ContractingClient(vm_profile="xian_vm_v2", environment=self.environment)
         self.client.flush()
         
         # Get the directory containing the test file
