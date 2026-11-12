@@ -6,6 +6,7 @@ from pathlib import Path
 
 from contracting.local import ContractingClient
 from xian_py.wallet import Wallet
+from xian_runtime_types.decimal import ContractingDecimal
 from xian_runtime_types.time import Datetime
 
 
@@ -133,6 +134,42 @@ class TestXSC002PermitAuthorizer(unittest.TestCase):
         deadline = str(self.create_deadline())
 
         for nonce, value in enumerate((1000, 12000, 1000000, 2500000)):
+            msg = self.construct_permit_msg(
+                "con_token",
+                owner,
+                spender,
+                value,
+                deadline,
+                nonce=nonce,
+            )
+            signature = wallet.sign_msg(msg)
+
+            self.authorizer.permit(
+                token_contract="con_token",
+                owner=owner,
+                spender=spender,
+                value=value,
+                deadline=deadline,
+                nonce=nonce,
+                signature=signature,
+            )
+
+            self.assertEqual(self.token.approvals[owner, spender], value)
+            self.assertEqual(self.authorizer.nonces[owner], nonce + 1)
+
+    def test_valid_permit_fractional_amounts(self):
+        # The contract signs str(decimal), which V2 renders as plain fixed point
+        # with no trailing zeros, the same text the payer signs.
+        wallet = Wallet(
+            "ed30796abc4ab47a97bfb37359f50a9c362c7b304a4b4ad1b3f5369ecb6f7fd8"
+        )
+        owner = wallet.public_key
+        spender = "some_spender"
+        deadline = str(self.create_deadline())
+        values = ("0.5", "1000.25", "123.4560", "0.000000000000000000000000000001")
+
+        for nonce, text in enumerate(values):
+            value = ContractingDecimal(text)
             msg = self.construct_permit_msg(
                 "con_token",
                 owner,
