@@ -11,7 +11,6 @@ STANDARDS = sorted(path.parent.parent.name for path in ROOT.glob("XSC*/tests/tes
 # This process starts with a disposable stand-in for host storage, before any
 # client or driver import. Even a missing/broken conftest cannot reach the host.
 REFERENCE_RUNNER = """
-import inspect
 import sys
 from pathlib import Path
 
@@ -29,10 +28,9 @@ class StorageProbe:
         assert session.config.rootpath == Path(sys.argv[2]), "repository root not selected"
         assert self.storage != fallback, "root conftest did not isolate storage"
         assert self.storage.is_dir()
-        default = inspect.signature(ContractingClient).parameters["storage_home"].default
-        assert default == self.storage, "client cached a different storage default"
         with ContractingClient(vm_profile="xian_vm_v2") as client:
-            assert client.raw_driver.storage_home == self.storage
+            # A default bound before conftest ran would point at the fallback.
+            assert client.raw_driver.storage_home == self.storage, "client used another storage"
             client.flush()
         print("ISOLATED_REFERENCE_STORAGE", self.storage)
 
