@@ -1,0 +1,25 @@
+[project]
+name = "xian-xips"
+version = "0.1.0"
+description = "Xian Standards and Improvement Proposals: specifications and reference implementations"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+# The reference suites run contracts on the Contracting VM; XSC002 also imports
+# the SDK's wallet helper.
+dependencies = [
+    "xian-tech-contracting>=1.1.4,<2",
+    "xian-tech-py>=0.5.3,<0.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3,<10",
+]
+
+[tool.uv]
+# Specifications and reference contracts only: there is nothing to install.
+package = false
+
+[tool.uv.sources]
+xian-tech-contracting = { path = "../xian-contracting", editable = true }
+xian-tech-py = { path = "../xian-py", editable = true }

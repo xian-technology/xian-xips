@@ -2,12 +2,12 @@
 
 ## Validation
 
-- Use a Python environment with matching `xian-contracting`, `xian-tech-py`, and
-  `pytest` packages, such as the sibling `xian-py` development environment with
-  its `compile` extra. XSC002 imports the SDK's wallet helper.
-- Run `python -m pytest tests/` from the repository root for the storage-isolation
+- The repo's uv project (`pyproject.toml`, `uv.lock`) installs `xian-contracting`
+  and `xian-tech-py` from the sibling checkouts plus `pytest`; `uv run` syncs it.
+  XSC002 imports the SDK's wallet helper.
+- Run `uv run pytest tests/` from the repository root for the storage-isolation
   safeguards, including all reference suites in separate subprocesses.
-- From each changed standard's directory, run `python -m pytest tests/test.py`.
+- From each changed standard's directory, run `uv run pytest tests/test.py`.
   These reference suites use the explicit filename `test.py`.
 - Keep the root `pytest.ini` and `conftest.py` active so default contract clients
   use disposable storage instead of the host node's state directory. Do not bypass them when

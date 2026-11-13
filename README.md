@@ -32,9 +32,8 @@ Browse a standard by directory. Each standard's directory contains:
 - `tests/` — Contracting-based interoperability tests describing the
   intended behavior of the standard.
 
-To run the reference tests, use the local Xian contract development
-environment that matches the rest of the stack (`xian-tech-contracting[v2]>=1.1.4` plus
-`xian-linter` siblings, see those repos' READMEs).
+To run the reference tests, see [Validation](#validation): `uv` builds the
+test environment from the sibling `xian-contracting` and `xian-py` checkouts.
 
 ## Principles
 
@@ -82,14 +81,19 @@ Additional families can be introduced as needed.
 ## Validation
 
 ```bash
+# From the repository root: storage-isolation checks plus every reference suite
+uv run pytest tests/
+
 # From inside a standard's directory:
 uv run pytest tests/test.py
 ```
 
-Most standards include Contracting-based reference tests. Use the local
-Xian contract development environment (matching `xian-contracting` and
-`xian-linter`) when running them. The XSC002 suite also requires `xian-tech-py`
-for its wallet helper.
+`uv run` creates and syncs `.venv` from `pyproject.toml` and `uv.lock` on
+first use. The reference tests run on the local Contracting VM from the sibling
+`../xian-contracting` checkout, and the XSC002 suite imports the wallet helper
+from the sibling `../xian-py` checkout, so clone both next to this repository
+first.
+
 The root `pytest.ini` anchors test discovery at this repository, and
 `conftest.py` configures disposable contract storage before test
 collection, including tests run from a standard's directory. It leaves the
