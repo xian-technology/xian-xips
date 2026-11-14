@@ -3,6 +3,8 @@ name = "xian-xips"
 version = "0.1.0"
 description = "Xian Standards and Improvement Proposals: specifications and reference implementations"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.14,<3.15"
 # The reference suites run contracts on the Contracting VM; XSC002 also imports
 # the SDK's wallet helper.
