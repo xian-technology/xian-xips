@@ -50,6 +50,15 @@ BurnEvent = LogEvent(
 )
 
 
+def require_canonical_hex_account(account: str):
+    if len(account) != 64 or account == account.lower():
+        return
+    for character in account:
+        if character not in "0123456789abcdefABCDEF":
+            return
+    assert False, "Hex account must be a canonical lowercase 64-hex key."
+
+
 @construct
 def seed():
     metadata["token_name"] = "{{token_name}}"
@@ -92,6 +101,7 @@ def change_metadata(key: str, value: Any):
 
 @export
 def change_operator(new_operator: str):
+    require_canonical_hex_account(new_operator)
     assert ctx.caller == operator.get(), "Only operator can change operator."
     assert isinstance(new_operator, str) and new_operator != "", "new_operator must be non-empty."
     operator.set(new_operator)
@@ -104,6 +114,7 @@ def operator_of():
 
 @export
 def transfer(amount: decimal, to: str):
+    require_canonical_hex_account(to)
     assert amount > 0, "Cannot send negative balances."
     assert balances[ctx.caller] >= amount, "Not enough coins to send."
 
@@ -115,6 +126,7 @@ def transfer(amount: decimal, to: str):
 
 @export
 def approve(amount: decimal, to: str):
+    require_canonical_hex_account(to)
     assert amount >= 0, "Cannot approve negative balances."
     approvals[ctx.caller, to] = amount
 
@@ -123,6 +135,7 @@ def approve(amount: decimal, to: str):
 
 @export
 def transfer_from(amount: decimal, to: str, main_account: str):
+    require_canonical_hex_account(to)
     approved = approvals[main_account, ctx.caller]
 
     assert amount > 0, "Cannot send negative balances!"
@@ -143,12 +156,14 @@ def balance_of(address: str):
 
 @export
 def change_minter(new_minter: str):
+    require_canonical_hex_account(new_minter)
     assert ctx.caller == minter.get(), "Only minter can change minter."
     minter.set(new_minter)
 
 
 @export
 def mint(amount: decimal, to: str):
+    require_canonical_hex_account(to)
     assert ctx.caller == minter.get(), "Only minter can mint tokens."
     assert amount > 0, "Cannot mint negative balances."
 

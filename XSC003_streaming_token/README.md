@@ -87,3 +87,11 @@ Implementations should emit:
 - XSC003 does not require a `permits` hash
 - If signature-based approvals are needed, pair the token with XSC002 instead
   of embedding permit logic into the streaming token itself
+
+
+## Account Identifiers
+
+Public-key account identifiers use exactly 64 lowercase hexadecimal characters.
+Transfers, approvals, minting, and authority changes reject mixed- or uppercase
+64-hex keys where those operations are supported. Named contract identifiers
+remain valid; contract calls do not silently change signed arguments.

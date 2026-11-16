@@ -154,3 +154,11 @@ The contract emits the following events to the log for external tracking and aud
 ## Contact
 
 For questions, feedback, or technical support regarding the **XSC004 Wrapped Token Contract**, please open an issue in the official repository or reach out to the Xian project maintainers. We appreciate your interest in bringing interoperable assets to the Xian blockchain!
+
+
+## Account Identifiers
+
+Public-key account identifiers use exactly 64 lowercase hexadecimal characters.
+Transfers, approvals, minting, and authority changes reject mixed- or uppercase
+64-hex keys where those operations are supported. Named contract identifiers
+remain valid; contract calls do not silently change signed arguments.

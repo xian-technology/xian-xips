@@ -82,3 +82,11 @@ can query them efficiently.
 - If a token also wants to support XSC002, it can add an
   `approve_from_authorizer(owner, spender, amount)` extension without changing
   the XSC001 core surface
+
+
+## Account Identifiers
+
+Public-key account identifiers use exactly 64 lowercase hexadecimal characters.
+Transfers, approvals, minting, and authority changes reject mixed- or uppercase
+64-hex keys where those operations are supported. Named contract identifiers
+remain valid; contract calls do not silently change signed arguments.
