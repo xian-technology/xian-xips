@@ -62,7 +62,7 @@ Allows the caller (token holder) to approve another account to transfer up to `a
 
 ### 5. `transfer_from(amount: decimal, to: str, main_account: str)`
 
-Executes a transfer on behalf of `main_account`, as long as the caller has been approved via [`approve`](#4-approveamount-float-to-str).
+Executes a transfer on behalf of `main_account`, as long as the caller has been approved via `approve(amount, to)`.
 
 **Parameters:**
 - `amount`: Number of tokens to transfer (must be positive).
@@ -124,10 +124,10 @@ Burns (destroys) the caller’s tokens, decreasing the total supply. Used to “
 
 The contract emits the following events to the log for external tracking and auditing:
 
-- **TransferEvent**: Fired whenever tokens are transferred (via `transfer` or `transfer_from`).
-- **ApproveEvent**: Fired whenever a token approval is set (via `approve`).
-- **MintEvent**: Fired whenever new tokens are minted (via `mint`).
-- **BurnEvent**: Fired whenever tokens are burned (via `burn`). The event includes `from`, `amount`, `destination_chain`, `destination_address`, `withdrawal_id`, and `memo`. Watchers should key release processing by `(contract, withdrawal_id)` and should treat `destination_chain` and `destination_address` as the canonical external routing fields.
+- **Transfer** (`TransferEvent` in source): Fired whenever tokens are transferred (via `transfer` or `transfer_from`).
+- **Approve** (`ApproveEvent` in source): Fired whenever a token approval is set (via `approve`).
+- **Mint** (`MintEvent` in source): Fired whenever new tokens are minted (via `mint`).
+- **Burn** (`BurnEvent` in source): Fired whenever tokens are burned (via `burn`). The event includes `from`, `amount`, `destination_chain`, `destination_address`, `withdrawal_id`, and `memo`. Watchers should key release processing by `(contract, withdrawal_id)` and should treat `destination_chain` and `destination_address` as the canonical external routing fields.
 
 ## Usage Scenarios
 
